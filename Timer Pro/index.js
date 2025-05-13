@@ -1,136 +1,138 @@
-const playButton = document.querySelector(".playButton");
-const resetButton = document.querySelector(".resetButton");
-const recordButton = document.querySelector(".recordButton");
-const restartButton = document.querySelector(".restartButton");
-const resetLapButton = document.querySelector(".resetLapButton");
-const buttons = document.querySelector(".buttons");
+// Timer Elements
+const hourInterval = document.querySelector(".hour");
+const minuteInterval = document.querySelector(".minute");
+const secondInterval = document.querySelector(".second");
+const millisecondInterval = document.querySelector(".milliseconds");
 
-const hour = document.querySelector(".hour");
-const minute = document.querySelector(".minute");
-const second = document.querySelector(".second");
-const msec = document.querySelector(".milliSecond");
-const recordLap = document.querySelector(".laps");
+// Buttons
+const startButton = document.querySelector(".start");
+const resetButton = document.querySelector(".reset");
+const restartButton = document.querySelector(".restart");
+const saveButton = document.querySelector(".save");
+const clearButton = document.querySelector(".clear");
 
-const runnerInputSection = document.querySelector("#runnerInputSection");
-const runnerForm = document.querySelector("#runnerForm");
-const runnerIdInput = document.querySelector("#runnerIdInput");
-const statusMessage = document.querySelector("#statusMessage");
+// Sections
+const sidePanel = document.querySelector(".sidePanel");
+const logList = document.querySelector(".logList");
+const timerBox = document.querySelector(".timerDisplay");
+const runnerInput = document.querySelector("#runnerInput");
+const idPrompt = document.querySelector("#idPrompt");
+const idForm = document.querySelector("#idForm");
+const feedback = document.querySelector("#feedback");
 
-let isPlay = false;
-let isReset = false;
+// Timer State
 let timer = null;
+let isRunning = false;
+let hour = 0,
+  minute = 0,
+  second = 0,
+  millisecond = 0;
+let recordedTime = "";
 
-let hourCounter = 0;
-let minuteCounter = 0;
-let secondCounter = 0;
-let milliCounter = 0;
-let recordedLapTime = "";
-
-function formatTime(value) {
-  return value.toString().padStart(2, "0");
+function format(num) {
+  return num.toString().padStart(2, "0");
 }
 
-function updateDisplay() {
-  hour.textContent = formatTime(hourCounter);
-  minute.textContent = formatTime(minuteCounter);
-  second.textContent = formatTime(secondCounter);
-  msec.textContent = formatTime(milliCounter);
+function updateTimer() {
+  millisecond++;
+  if (millisecond >= 100) {
+    millisecond = 0;
+    second++;
+  }
+  if (second >= 60) {
+    second = 0;
+    minute++;
+  }
+  if (minute >= 60) {
+    minute = 0;
+    hour++;
+  }
+
+  hourInterval.textContent = format(hour);
+  minuteInterval.textContent = format(minute);
+  secondInterval.textContent = format(second);
+  millisecondInterval.textContent = format(millisecond);
 }
 
-function startTimer() {
-  timer = setInterval(() => {
-    milliCounter++;
-    if (milliCounter === 100) {
-      milliCounter = 0;
-      secondCounter++;
-    }
-    if (secondCounter === 60) {
-      secondCounter = 0;
-      minuteCounter++;
-    }
-    if (minuteCounter === 60) {
-      minuteCounter = 0;
-      hourCounter++;
-    }
-    updateDisplay();
-  }, 10);
-}
-
-playButton.addEventListener("click", () => {
-  const outerCircle = document.querySelector(".outerCircle");
-  const buttons = document.querySelector(".buttons");
-
-  if (!isPlay) {
-    startTimer();
-    isPlay = true;
-    isReset = false;
-    playButton.textContent = "Pause";
-    outerCircle.classList.add("animate");
-    buttons.classList.remove("hidden");
-    statusMessage.textContent = "Timer started.";
+// Start / Pause Logic
+startButton.addEventListener("click", () => {
+  if (!isRunning) {
+    timer = setInterval(updateTimer, 10);
+    isRunning = true;
+    startButton.textContent = "Pause";
+    sidePanel.classList.remove("hidden");
+    timerBox.classList.add("animate");
+    feedback.textContent = "Timer started.";
   } else {
     clearInterval(timer);
-    isPlay = false;
-    playButton.textContent = "Play";
-    outerCircle.classList.remove("animate");
-    buttons.classList.add("hidden");
-    statusMessage.textContent = "Timer paused.";
+    isRunning = false;
+    startButton.textContent = "Play";
+    timerBox.classList.remove("animate");
+    feedback.textContent = "Timer paused.";
   }
 });
 
+// Reset Button
 resetButton.addEventListener("click", () => {
   clearInterval(timer);
-  isPlay = false;
-  isReset = true;
-  hourCounter = 0;
-  minuteCounter = 0;
-  secondCounter = 0;
-  milliCounter = 0;
-  updateDisplay();
-  playButton.textContent = "Play";
-  statusMessage.textContent = "Timer reset.";
+  isRunning = false;
+  hour = minute = second = millisecond = 0;
+  updateTimer();
+
+  startButton.textContent = "Play";
+  timerBox.classList.remove("animate");
+  sidePanel.classList.add("hidden");
+
+  feedback.textContent = "Timer reset.";
 });
 
-recordButton.addEventListener("click", () => {
-  if (!isPlay) {
-    statusMessage.textContent = "Start the timer first.";
-    return;
-  }
-  recordedLapTime = `${formatTime(hourCounter)}:${formatTime(
-    minuteCounter
-  )}:${formatTime(secondCounter)}:${formatTime(milliCounter)}`;
-  runnerInputSection.hidden = false;
-  runnerIdInput.focus();
-  statusMessage.textContent = "Time recorded. Enter runner ID.";
-});
-
-runnerForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const runnerId = runnerIdInput.value.trim();
-  if (!runnerId || !recordedLapTime) {
-    statusMessage.textContent = "Runner ID or time missing.";
-    return;
-  }
-
-  const li = document.createElement("li");
-  li.textContent = `Runner ${runnerId} - ${recordedLapTime}`;
-  recordLap.appendChild(li);
-
-  runnerInputSection.hidden = true;
-  runnerIdInput.value = "";
-  recordedLapTime = "";
-  statusMessage.textContent = "Runner time saved.";
-});
-
+// Restart (resumes immediately)
 restartButton.addEventListener("click", () => {
   clearInterval(timer);
-  isPlay = false;
-  startTimer();
-  playButton.textContent = "Pause";
-  statusMessage.textContent = "Timer restarted.";
+  timer = setInterval(updateTimer, 10);
+  isRunning = true;
+  startButton.textContent = "Pause";
+  timerBox.classList.add("animate");
+  feedback.textContent = "Timer restarted.";
 });
 
-resetLapButton.addEventListener("click", () => {
-  recordLap.innerHTML = "";
-  statusMessage.textContent = "All laps cleared.";
+// Save Lap Time → prompt for ID
+saveButton.addEventListener("click", () => {
+  if (!isRunning) {
+    feedback.textContent = "Start the timer first.";
+    return;
+  }
+
+  recordedTime = `${format(hour)}:${format(minute)}:${format(second)}:${format(
+    millisecond
+  )}`;
+  idPrompt.hidden = false;
+  runnerInput.focus();
+  feedback.textContent = "Time recorded. Please enter runner ID.";
+});
+
+// Submit Runner ID
+idForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const id = runnerInput.value.trim();
+
+  if (!id || !recordedTime) {
+    feedback.textContent = "Runner ID or time missing.";
+    return;
+  }
+
+  const item = document.createElement("li");
+  item.textContent = `Runner ${id} – ${recordedTime}`;
+  logList.appendChild(item);
+
+  runnerInput.value = "";
+  idPrompt.hidden = true;
+  recordedTime = "";
+  feedback.textContent = "Runner time saved.";
+});
+
+// Reset Lap Logs
+clearButton.addEventListener("click", () => {
+  logList.innerHTML = "";
+  feedback.textContent = "All finish times cleared.";
 });

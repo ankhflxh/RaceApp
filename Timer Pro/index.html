@@ -8,44 +8,49 @@
   </head>
   <body>
     <main>
-      <section class="outerCircle">
-        <div class="innerCircle">
-          <span class="text hour">00</span>
-          <span class="colon">:</span>
-          <span class="text minute">00</span>
-          <span class="colon">:</span>
-          <span class="text second">00</span>
-          <span class="colon">:</span>
-          <span class="text milliSecond">00</span>
-        </div>
+      <section class="timerDisplay">
+        <span class="digits hour">00</span>
+        <span class="colon">:</span>
+        <span class="digits minute">00</span>
+        <span class="colon">:</span>
+        <span class="digits second">00</span>
+        <span class="colon">:</span>
+        <span class="digits milliseconds">00</span>
       </section>
 
-      <section class="buttonRow">
-        <button class="playButton">Play</button>
+      <section class="buttonLayout">
+        <section class="sidePanel hidden">
+          <section class="column leftPanel">
+            <button class="btn reset">Reset</button>
+            <button class="btn restart">Restart</button>
+          </section>
+
+          <section class="column rightPanel">
+            <button class="btn save">Record</button>
+            <button class="btn clear">Reset Laps</button>
+          </section>
+        </section>
+
+        <section class="mainControl">
+          <button class="btn start">Play</button>
+        </section>
       </section>
 
-      <section class="buttons hidden">
-        <button class="resetButton">Reset</button>
-        <button class="recordButton">Record</button>
-        <button class="restartButton">Restart</button>
-        <button class="resetLapButton">Reset Laps</button>
+      <section class="logs">
+        <h2>Finish Times</h2>
+        <ul class="logList"></ul>
       </section>
 
-      <section id="runnerInputSection" hidden>
-        <form id="runnerForm">
-          <label for="runnerIdInput">Enter Runner ID:</label>
-          <input type="number" id="runnerIdInput" required />
+      <section id="idPrompt" hidden>
+        <form id="idForm">
+          <label for="runnerInput">Enter Runner ID:</label>
+          <input type="number" id="runnerInput" required />
           <button type="submit">Submit</button>
         </form>
       </section>
 
       <section>
-        <h2>Finish Times</h2>
-        <ul class="laps"></ul>
-      </section>
-
-      <section>
-        <output id="statusMessage" aria-live="polite"></output>
+        <output id="feedback" aria-live="polite"></output>
       </section>
     </main>
     <script src="index.js"></script>
