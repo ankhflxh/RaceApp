@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer Pro</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <main>
+      <section class="outerCircle">
+        <div class="innerCircle">
+          <span class="text hour">00</span>
+          <span class="colon">:</span>
+          <span class="text minute">00</span>
+          <span class="colon">:</span>
+          <span class="text second">00</span>
+          <span class="colon">:</span>
+          <span class="text milliSecond">00</span>
+        </div>
+      </section>
+
+      <section class="buttonRow">
+        <button class="playButton">Play</button>
+      </section>
+
+      <section class="buttons hidden">
+        <button class="resetButton">Reset</button>
+        <button class="recordButton">Record</button>
+        <button class="restartButton">Restart</button>
+        <button class="resetLapButton">Reset Laps</button>
+      </section>
+
+      <section id="runnerInputSection" hidden>
+        <form id="runnerForm">
+          <label for="runnerIdInput">Enter Runner ID:</label>
+          <input type="number" id="runnerIdInput" required />
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Finish Times</h2>
+        <ul class="laps"></ul>
+      </section>
+
+      <section>
+        <output id="statusMessage" aria-live="polite"></output>
+      </section>
+    </main>
+    <script src="index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Race Results</title>
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 style="color: white;">Race Results</h1>
+    <ul id="resultsList" class="laps"></ul>
+    <button class="clearButton" id="clearServerResults">Clear Server Results</button>
+    <button class="clearButton" onclick="window.location.href='index.html'">Back to Timer</button>
+  </div>
+  <script type="module">
+    async function fetchResults() {
+      const res = await fetch("http://localhost:8080/results");
+      const data = await res.json();
+  
+      const list = document.querySelector("#resultsList");
+      list.innerHTML = "";
+  
+      if (data.length === 0) {
+        const li = document.createElement("li");
+        li.className = "lapItems";
+        li.textContent = "No results recorded.";
+        list.appendChild(li);
+        return;
+      }
+  
+      data.forEach((entry, index) => {
+        const li = document.createElement("li");
+        li.className = "lapItems";
+  
+        const runner = document.createElement("span");
+        runner.className = "position";
+        runner.textContent = `#${index + 1} Runner ID: ${entry.runner}`;
+  
+        const time = document.createElement("span");
+        time.className = "time";
+        time.textContent = `Time: ${entry.timeStamp}`;
+  
+        li.appendChild(runner);
+        li.appendChild(time);
+        list.appendChild(li);
+      });
+    }
+  
+    document.querySelector("#clearServerResults").addEventListener("click", async () => {
+      if (confirm("Clear all server results?")) {
+        await fetch("http://localhost:8080/clear", { method: "DELETE" });
+        fetchResults();
+      }
+    });
+  
+    fetchResults();
+  </script>  
+</body>
+</html>
