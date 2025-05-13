@@ -10,6 +10,13 @@ const resetButton = document.querySelector(".reset");
 const restartButton = document.querySelector(".restart");
 const saveButton = document.querySelector(".save");
 const clearButton = document.querySelector(".clear");
+const finishBtn = document.querySelector("#finishRaceBtn");
+const viewResultsBtn = document.querySelector("#viewResultsBtn");
+const stayBtn = document.querySelector("#stayBtn");
+
+// Modal + Warnings
+const resultModal = document.querySelector("#resultModal");
+const warningBox = document.querySelector("#warningMessage");
 
 // Other UI Elements
 const logList = document.querySelector(".logList");
@@ -105,7 +112,6 @@ resetButton.addEventListener("click", () => {
   second = 0;
   millisecond = 0;
 
-  // Update timer display directly to 00
   hourInterval.textContent = "00";
   minuteInterval.textContent = "00";
   secondInterval.textContent = "00";
@@ -142,32 +148,38 @@ saveButton.addEventListener("click", () => {
   feedback.textContent = "Time recorded. Please enter runner ID.";
 });
 
-// Submit ID and rank result
+// Submit ID and rank result with duplicate ID check
 idForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const id = runnerInput.value.trim();
+
+  // Hide old warning
+  warningBox.classList.add("hidden");
 
   if (!id || !recordedTime) {
     feedback.textContent = "Runner ID or time missing.";
     return;
   }
 
-  // Store result
+  const alreadyExists = raceResults.some((r) => r.id === id);
+  if (alreadyExists) {
+    warningBox.classList.remove("hidden");
+    feedback.textContent = "Duplicate ID detected.";
+    return;
+  }
+
   raceResults.push({
     id,
     time: recordedTime,
     ms: timeToMs(recordedTime),
   });
 
-  // Sort by fastest
   raceResults.sort((a, b) => a.ms - b.ms);
 
-  // Clear current list
   while (logList.firstChild) {
     logList.removeChild(logList.firstChild);
   }
 
-  // Re-render list with positions
   raceResults.forEach((runner, index) => {
     const li = document.createElement("li");
     let positionLabel = "";
@@ -184,7 +196,6 @@ idForm.addEventListener("submit", (e) => {
     logList.appendChild(li);
   });
 
-  // Reset input and prompt
   runnerInput.value = "";
   idPrompt.hidden = true;
   recordedTime = "";
@@ -200,4 +211,47 @@ clearButton.addEventListener("click", () => {
   }
 
   feedback.textContent = "All finish times cleared.";
+});
+
+// Send results to server and show modal
+async function postResultsToServer() {
+  try {
+    const res = await fetch("http://localhost:8080/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(raceResults),
+    });
+
+    if (res.ok) {
+      feedback.textContent = "Results saved to server.";
+      resultModal.classList.remove("hidden");
+    } else {
+      feedback.textContent = "Failed to save results to server.";
+    }
+  } catch (err) {
+    feedback.textContent = "Error connecting to server.";
+    console.error(err);
+  }
+}
+
+// When "Finish Race" is clicked
+finishBtn.addEventListener("click", () => {
+  if (raceResults.length === 0) {
+    feedback.textContent = "No results to save.";
+    return;
+  }
+
+  postResultsToServer();
+});
+
+// Modal buttons
+viewResultsBtn.addEventListener("click", () => {
+  window.location.href = "results.html";
+});
+
+stayBtn.addEventListener("click", () => {
+  resultModal.classList.add("hidden");
+  feedback.textContent = "You can still review or add results.";
 });

@@ -1,60 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Race Results</title>
-  <link rel="stylesheet" href="index.css" />
-</head>
-<body>
-  <div class="container">
-    <h1 style="color: white;">Race Results</h1>
-    <ul id="resultsList" class="laps"></ul>
-    <button class="clearButton" id="clearServerResults">Clear Server Results</button>
-    <button class="clearButton" onclick="window.location.href='index.html'">Back to Timer</button>
-  </div>
-  <script type="module">
-    async function fetchResults() {
-      const res = await fetch("http://localhost:8080/results");
-      const data = await res.json();
-  
-      const list = document.querySelector("#resultsList");
-      list.innerHTML = "";
-  
-      if (data.length === 0) {
-        const li = document.createElement("li");
-        li.className = "lapItems";
-        li.textContent = "No results recorded.";
-        list.appendChild(li);
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Race Results</title>
+    <style>
+      body {
+        background-color: #000;
+        color: white;
+        font-family: "Courier New", monospace;
+        margin: 0;
+        padding: 2rem;
+        text-align: center;
       }
-  
-      data.forEach((entry, index) => {
-        const li = document.createElement("li");
-        li.className = "lapItems";
-  
-        const runner = document.createElement("span");
-        runner.className = "position";
-        runner.textContent = `#${index + 1} Runner ID: ${entry.runner}`;
-  
-        const time = document.createElement("span");
-        time.className = "time";
-        time.textContent = `Time: ${entry.timeStamp}`;
-  
-        li.appendChild(runner);
-        li.appendChild(time);
-        list.appendChild(li);
+
+      h1 {
+        margin-bottom: 2rem;
+        font-size: 2rem;
+      }
+
+      table {
+        width: 90%;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 0.75rem;
+        border: 1px solid white;
+        text-align: center;
+      }
+
+      th {
+        background-color: #111;
+      }
+
+      tr:nth-child(even) {
+        background-color: #111;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      button {
+        padding: 0.5rem 1rem;
+        background: white;
+        color: black;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      button:hover {
+        background: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Race Results</h1>
+
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Runner ID</th>
+            <th>Time</th>
+            <th>Medal</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+
+      <div class="buttons">
+        <button id="clearServer">Clear Server Results</button>
+        <button id="backBtn">Back to Timer</button>
+      </div>
+    </main>
+
+    <script type="module">
+      const resultsBody = document.getElementById("resultsBody");
+      const clearBtn = document.getElementById("clearServer");
+      const backBtn = document.getElementById("backBtn");
+
+      async function fetchResults() {
+        try {
+          const res = await fetch("http://localhost:8080/results");
+          const data = await res.json();
+
+          const sorted = [...data].sort((a, b) => a.ms - b.ms);
+
+          // Clear old rows (no innerHTML)
+          while (resultsBody.firstChild) {
+            resultsBody.removeChild(resultsBody.firstChild);
+          }
+
+          sorted.forEach((runner, index) => {
+            const tr = document.createElement("tr");
+
+            const positionCell = document.createElement("td");
+            const idCell = document.createElement("td");
+            const timeCell = document.createElement("td");
+            const medalCell = document.createElement("td");
+
+            positionCell.textContent = `#${index + 1}`;
+            idCell.textContent = runner.id ?? "N/A";
+            timeCell.textContent = runner.time ?? "N/A";
+
+            if (index === 0) medalCell.textContent = "🥇";
+            else if (index === 1) medalCell.textContent = "🥈";
+            else if (index === 2) medalCell.textContent = "🥉";
+            else medalCell.textContent = "";
+
+            tr.appendChild(positionCell);
+            tr.appendChild(idCell);
+            tr.appendChild(timeCell);
+            tr.appendChild(medalCell);
+            resultsBody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error("Failed to fetch results:", err);
+        }
+      }
+
+      clearBtn.addEventListener("click", async () => {
+        try {
+          await fetch("http://localhost:8080/clear", { method: "DELETE" });
+          fetchResults();
+        } catch (err) {
+          console.error("Failed to clear server results:", err);
+        }
       });
-    }
-  
-    document.querySelector("#clearServerResults").addEventListener("click", async () => {
-      if (confirm("Clear all server results?")) {
-        await fetch("http://localhost:8080/clear", { method: "DELETE" });
-        fetchResults();
-      }
-    });
-  
-    fetchResults();
-  </script>  
-</body>
+
+      backBtn.addEventListener("click", () => {
+        window.location.href = "index.html";
+      });
+
+      fetchResults();
+    </script>
+  </body>
 </html>

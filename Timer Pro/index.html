@@ -40,8 +40,26 @@
         </form>
       </section>
 
+      <section class="finishArea">
+        <button class="btn finish" id="finishRaceBtn">Finish Race</button>
+      </section>
+
+      <section id="resultModal" class="modal hidden">
+        <div class="modalContent">
+          <p>Results saved. Do you wish to see results?</p>
+          <div class="modalActions">
+            <button class="btn" id="viewResultsBtn">Yes</button>
+            <button class="btn" id="stayBtn">No</button>
+          </div>
+        </div>
+      </section>
+
       <section>
         <output id="feedback" aria-live="polite"></output>
+      </section>
+
+      <section id="warningMessage" class="hidden">
+        <p style="color: orange">ID already inputted.</p>
       </section>
     </main>
     <script src="index.js"></script>
