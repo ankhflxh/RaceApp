@@ -69,7 +69,6 @@ main {
   padding: 0 0.2rem;
 }
 
-/* Button Area Layout */
 .buttonArea {
   display: grid;
   grid-template-columns: repeat(5, auto);
@@ -98,7 +97,7 @@ main {
 }
 
 .center-btn {
-  grid-column: 3; /* Always center of 5 buttons */
+  grid-column: 3;
   transform: scale(1.1);
   font-weight: bold;
   z-index: 1;
@@ -112,7 +111,6 @@ main {
   margin-top: 2rem;
 }
 
-/* Modal styles */
 .modal {
   position: fixed;
   top: 0;
