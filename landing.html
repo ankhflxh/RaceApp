@@ -8,6 +8,23 @@
       rel="stylesheet"
     />
     <style>
+      .about-link {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 28px;
+        text-decoration: none;
+        color: #6200ea;
+        background-color: white;
+        border-radius: 50%;
+        padding: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .about-link:hover {
+        background-color: #eee;
+      }
+
       body {
         font-family: sans-serif;
         margin: 0;
@@ -74,6 +91,10 @@
     </style>
   </head>
   <body>
+    <a href="/Timer Pro/about.html" class="about-link" title="About Timer Pro">
+      <span class="material-icons">info</span>
+    </a>
+
     <h1>Timer Pro</h1>
 
     <a href="Timer Pro/index.html" class="button">
@@ -89,6 +110,5 @@
     <p class="note">Please note: Results will be available after the race.</p>
 
     <img src="/manrun.png" alt="Running" id="runner" />
-
   </body>
 </html>
