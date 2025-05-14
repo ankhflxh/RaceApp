@@ -109,6 +109,13 @@ resetButton.addEventListener("click", () => {
 
 restartButton.addEventListener("click", () => {
   clearInterval(timer);
+
+  hour = minute = second = millisecond = 0;
+  hourInterval.textContent        = "00";
+  minuteInterval.textContent      = "00";
+  secondInterval.textContent      = "00";
+  millisecondInterval.textContent = "00";
+  
   timer = setInterval(updateTimer, 10);
   isRunning = true;
   startButton.textContent = "Pause";

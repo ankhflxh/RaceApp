@@ -51,6 +51,17 @@ This is the heart of the application where the race is timed and runner results 
   - **No**: Closes modal, lets user continue editing.
 - **Live Log Area**: Displays a list of recorded runner finish times, positions, and medals.
 - **Clear Laps Button**: Clears the UI and backend race results (`DELETE /clear`).
+- **Feedback Prompts when respective button is clicked**:
+  | Button | Action | Feedback Message Shown |
+  | -------------- | ----------------- | ---------------------- |
+  | Timer reset | Full reset | `Timer reset.` |
+  | Start | **Play** button pressed | `Timer started.` |
+  | Pause | **Pause** button pressed | `Timer paused.` |
+  | Restart | **Restart** button pressed | `Timer restarted.` |
+  | Finish Race | **Finish Race** button pressed | `Results saved to server.` |
+  | Record | Timer is **running** | `Runner time saved.` |
+  | Record | Timer **not** running | `Start the timer first.` |
+  | Reset Laps | **Reset Laps** button pressed | `All finish times cleared (DB + UI).` |
 
 The page automatically:
 
