@@ -11,20 +11,15 @@ app.use(express.static("Timer Pro"));
 app.post("/submit", (req, res) => {
   const data = req.body;
   const insert = db.prepare(
-    "INSERT INTO race_results (id, time) VALUES (?, ?)"
+    "INSERT OR REPLACE INTO race_results (id, time) VALUES (?, ?)"
   );
 
   try {
-    db.run("DELETE FROM race_results", [], (err) => {
-      if (err) console.error("Failed to clear old results:", err.message);
-
-      if (Array.isArray(data)) {
-        data.forEach((entry) => insert.run(entry.id, entry.time));
-      } else {
-        insert.run(data.id, data.time);
-      }
-    });
-
+    if (Array.isArray(data)) {
+      data.forEach((entry) => insert.run(entry.id, entry.time));
+    } else {
+      insert.run(data.id, data.time);
+    }
     insert.finalize();
     console.log("Saved to DB:", data);
     res.sendStatus(200);

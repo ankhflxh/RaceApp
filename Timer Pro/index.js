@@ -139,14 +139,14 @@ idForm.addEventListener("submit", (e) => {
     feedback.textContent = "Runner ID or time missing.";
     return;
   }
-
-  const alreadyExists = raceResults.some((r) => r.id === id);
+  const displayId = `Runner ${id}`;
+  const alreadyExists = raceResults.some((r) => r.id === displayId);
   if (alreadyExists) {
     warningBox.classList.remove("hidden");
     feedback.textContent = "Duplicate ID detected.";
     return;
   }
-  const displayId = `Runner ${id}`;
+
   raceResults.push({
     id: displayId,
     time: recordedTime,
@@ -177,13 +177,21 @@ idForm.addEventListener("submit", (e) => {
 });
 
 clearButton.addEventListener("click", async () => {
-  raceResults = [];
-
-  while (logList.firstChild) logList.removeChild(logList.firstChild);
-
   try {
-    await fetch("/clear", { method: "DELETE" });
-    feedback.textContent = "All finish times cleared (DB + UI).";
+    const res = await fetch("/clear", { method: "DELETE" });
+
+    if (res.ok) {
+      // Only clear frontend if backend was successful
+      raceResults = [];
+
+      while (logList.firstChild) {
+        logList.removeChild(logList.firstChild);
+      }
+
+      feedback.textContent = "All finish times cleared (DB + UI).";
+    } else {
+      feedback.textContent = "Server failed to clear results.";
+    }
   } catch (err) {
     feedback.textContent = "Failed to clear server results.";
     console.error(err);
@@ -201,6 +209,9 @@ async function postResultsToServer() {
     if (res.ok) {
       feedback.textContent = "Results saved to server.";
       resultModal.classList.remove("hidden");
+
+      // ✅ CLEAR RESULTS after saving
+      raceResults = [];
     } else {
       feedback.textContent = "Failed to save results to server.";
     }
@@ -220,10 +231,43 @@ finishBtn.addEventListener("click", () => {
 });
 
 viewResultsBtn.addEventListener("click", () => {
-  window.location.href = "results.html";
+  location.href = "results.html";
 });
 
 stayBtn.addEventListener("click", () => {
   resultModal.classList.add("hidden");
   feedback.textContent = "You can still review or add results.";
 });
+
+(async function initializeFromDB() {
+  try {
+    const res = await fetch("/results");
+    const data = await res.json();
+
+    raceResults = data.map((r) => ({
+      id: r.id,
+      time: r.time,
+      ms: timeToMs(r.time),
+    }));
+
+    raceResults.sort((a, b) => a.ms - b.ms);
+
+    raceResults.forEach((runner, index) => {
+      const li = document.createElement("li");
+      let positionLabel = "";
+
+      if (index === 0) positionLabel = "🥇 1st";
+      else if (index === 1) positionLabel = "🥈 2nd";
+      else if (index === 2) positionLabel = "🥉 3rd";
+      else positionLabel = `${index + 1}th`;
+
+      li.textContent = `${runner.id} – ${runner.time} (${positionLabel} Position)`;
+      logList.appendChild(li);
+    });
+
+    feedback.textContent = "Previous race loaded.";
+  } catch (err) {
+    console.error("Error loading previous results:", err);
+    feedback.textContent = "Could not load previous session.";
+  }
+})();
