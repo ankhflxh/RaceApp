@@ -1,12 +1,28 @@
 body {
   margin: 0;
   padding: 0;
-  background: 			#56B4E9;
+  background: #56b4e9;
   color: white;
   font-family: "Courier New", monospace;
   height: 100vh;
   display: flex;
   flex-direction: column;
+}
+.back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 18px;
+  color: white;
+  text-decoration: none;
+  background-color: transparent;
+  padding: 8px 12px;
+  border-radius: 6px;
+  z-index: 999; /* ensure it's above other UI */
+}
+
+.back-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 main {

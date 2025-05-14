@@ -231,7 +231,7 @@ finishBtn.addEventListener("click", () => {
 });
 
 viewResultsBtn.addEventListener("click", () => {
-  location.href = "results.html";
+  document.location.assign = "results.html";
 });
 
 stayBtn.addEventListener("click", () => {
@@ -271,3 +271,53 @@ stayBtn.addEventListener("click", () => {
     feedback.textContent = "Could not load previous session.";
   }
 })();
+
+// Restore timer state from DB
+(async function restoreTimerState() {
+  try {
+    const res = await fetch("/timer-state");
+    const state = await res.json();
+    if (!state) return;
+
+    hour = state.hour ?? 0;
+    minute = state.minute ?? 0;
+    second = state.second ?? 0;
+    millisecond = state.millisecond ?? 0;
+    isRunning = !!state.isRunning;
+
+    hourInterval.textContent = format(hour);
+    minuteInterval.textContent = format(minute);
+    secondInterval.textContent = format(second);
+    millisecondInterval.textContent = format(millisecond);
+
+    if (isRunning) {
+      timer = setInterval(updateTimer, 10);
+      startButton.textContent = "Pause";
+      timerBox.classList.add("animate");
+      showExtraButtons();
+    }
+
+    feedback.textContent = "Timer state restored.";
+  } catch (err) {
+    console.error("Failed to load timer state:", err);
+  }
+})();
+
+// Save timer state every 1 second
+setInterval(async () => {
+  try {
+    await fetch("/timer-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        hour,
+        minute,
+        second,
+        millisecond,
+        isRunning: isRunning ? 1 : 0,
+      }),
+    });
+  } catch (err) {
+    console.error("Timer state save failed:", err);
+  }
+}, 1000);

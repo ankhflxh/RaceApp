@@ -58,6 +58,39 @@ app.delete("/clear", (req, res) => {
   });
 });
 
+app.get("/timer-state", (req, res) => {
+  db.get("SELECT * FROM timer_state WHERE id = 1", (err, row) => {
+    if (err) {
+      console.error(err.message);
+      return res.sendStatus(500);
+    }
+    res.json(row || {});
+  });
+});
+
+app.post("/timer-state", (req, res) => {
+  const { hour, minute, second, millisecond, isRunning } = req.body;
+  const stmt = db.prepare(`
+    INSERT INTO timer_state (id, hour, minute, second, millisecond, isRunning)
+    VALUES (1, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      hour = excluded.hour,
+      minute = excluded.minute,
+      second = excluded.second,
+      millisecond = excluded.millisecond,
+      isRunning = excluded.isRunning
+  `);
+
+  try {
+    stmt.run(hour, minute, second, millisecond, isRunning);
+    stmt.finalize();
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err.message);
+    res.sendStatus(500);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

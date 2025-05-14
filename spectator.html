@@ -3,10 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <title>Race Results</title>
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
     <style>
       body {
         font-family: monospace;
@@ -54,28 +50,34 @@
         color: #ccc;
       }
 
-      #export-pdf-btn {
-        background-color: lightgray;
-        color: black;
-        font-weight: bold;
-        padding: 40px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 20px;
-        margin-top: 20px;
-        cursor: pointer;
-        display: inline-block;
+      .buttons {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
       }
 
-      #export-pdf-btn:hover {
-        background-color: #ddd;
+      button {
+        padding: 1.5rem 2rem;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+        background: #ddd;
+        color: black;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #ccc;
       }
     </style>
   </head>
   <body>
     <!-- Exit to Landing Page -->
     <a href="landing.html" class="exit-button" title="Back to Landing Page">
-      <span class="material-icons">exit_to_app</span>
+      🔙
     </a>
 
     <h1>Race Results</h1>
@@ -91,10 +93,14 @@
       </thead>
       <tbody class="results-body"></tbody>
     </table>
-    <button id="export-pdf-btn">Export as PDF</button>
+
+    <div class="buttons">
+      <button id="export-btn">Export as CSV</button>
+    </div>
 
     <script type="module">
       const tableBody = document.querySelector(".results-body");
+      const exportBtn = document.getElementById("export-btn");
 
       const loadResults = async () => {
         try {
@@ -158,32 +164,72 @@
           });
         } catch (err) {
           console.error("Failed to load results:", err);
-          const row = document.createElement("tr");
-          const cell = document.createElement("td");
-          cell.textContent = "Failed to load results.";
-          cell.colSpan = 4;
-          row.appendChild(cell);
-          tableBody.appendChild(row);
         }
       };
 
+      const exportCSV = async () => {
+        try {
+          const res = await fetch("/results");
+          const data = await res.json();
+
+          if (!data.length) {
+            alert("No results to export.");
+            return;
+          }
+
+          let csvContent = "Position,Runner ID,Time,Medal\n";
+
+          data.sort((a, b) => {
+            const getMs = (t) => {
+              const parts = t.time.split(":").map(Number);
+              return (
+                ((parts[0] * 60 + parts[1]) * 60 + parts[2]) * 1000 +
+                (parts[3] || 0)
+              );
+            };
+            return getMs(a) - getMs(b);
+          });
+
+          data.forEach((runner, index) => {
+            const position =
+              index === 0
+                ? "1st"
+                : index === 1
+                ? "2nd"
+                : index === 2
+                ? "3rd"
+                : `${index + 1}th`;
+            const medal =
+              index === 0
+                ? "🥇"
+                : index === 1
+                ? "🥈"
+                : index === 2
+                ? "🥉"
+                : "-";
+            csvContent += `${position},${runner.id},${runner.time},${medal}\n`;
+          });
+
+          const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+          });
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", "race_results.csv");
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (err) {
+          console.error("Export failed:", err);
+          alert("Failed to export results.");
+        }
+      };
+
+      exportBtn.addEventListener("click", exportCSV);
+
       loadResults();
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-      document
-        .querySelector("#export-pdf-btn")
-        .addEventListener("click", () => {
-          const element = document.querySelector("table");
-          const opt = {
-            margin: 0.5,
-            filename: "race_results.pdf",
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-          };
-          html2pdf().set(opt).from(element).save();
-        });
     </script>
   </body>
 </html>
