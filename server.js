@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve static files from project root
+app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
@@ -89,6 +89,16 @@ app.post("/timer-state", (req, res) => {
     console.error(err.message);
     res.sendStatus(500);
   }
+});
+
+app.delete("/timer-state", (req, res) => {
+  db.run("DELETE FROM timer_state WHERE id = 1", [], function (err) {
+    if (err) {
+      console.error(err.message);
+      return res.sendStatus(500);
+    }
+    res.sendStatus(200);
+  });
 });
 
 app.listen(port, () => {

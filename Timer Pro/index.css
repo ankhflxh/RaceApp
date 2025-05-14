@@ -18,7 +18,7 @@ body {
   background-color: transparent;
   padding: 8px 12px;
   border-radius: 6px;
-  z-index: 999; /* ensure it's above other UI */
+  z-index: 999; 
 }
 
 .back-button:hover {

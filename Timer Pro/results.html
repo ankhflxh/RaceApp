@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Race Results</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
     <style>
       body {
         font-family: monospace;
@@ -79,9 +80,7 @@
     <div class="buttons">
       <button class="refresh-btn">Refresh</button>
       <button class="clear-btn">Clear Server Results</button>
-      <a href="index.html" class="back-btn">
-        <button type="button">Back to Timer</button>
-      </a>
+      <button onclick="history.back()">Back to Timer</button>
       <button id="export-btn">Export as CSV</button>
     </div>
 

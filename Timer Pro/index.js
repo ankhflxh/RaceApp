@@ -177,21 +177,13 @@ idForm.addEventListener("submit", (e) => {
 });
 
 clearButton.addEventListener("click", async () => {
+  raceResults = [];
+
+  while (logList.firstChild) logList.removeChild(logList.firstChild);
+
   try {
-    const res = await fetch("/clear", { method: "DELETE" });
-
-    if (res.ok) {
-      // Only clear frontend if backend was successful
-      raceResults = [];
-
-      while (logList.firstChild) {
-        logList.removeChild(logList.firstChild);
-      }
-
-      feedback.textContent = "All finish times cleared (DB + UI).";
-    } else {
-      feedback.textContent = "Server failed to clear results.";
-    }
+    await fetch("/clear", { method: "DELETE" });
+    feedback.textContent = "All finish times cleared (DB + UI).";
   } catch (err) {
     feedback.textContent = "Failed to clear server results.";
     console.error(err);
@@ -231,7 +223,7 @@ finishBtn.addEventListener("click", () => {
 });
 
 viewResultsBtn.addEventListener("click", () => {
-  document.location.assign = "results.html";
+  window.location.href = "results.html";
 });
 
 stayBtn.addEventListener("click", () => {
@@ -272,52 +264,17 @@ stayBtn.addEventListener("click", () => {
   }
 })();
 
-// Restore timer state from DB
-(async function restoreTimerState() {
-  try {
-    const res = await fetch("/timer-state");
-    const state = await res.json();
-    if (!state) return;
+// when the page becomes visible again (after history.back())
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
 
-    hour = state.hour ?? 0;
-    minute = state.minute ?? 0;
-    second = state.second ?? 0;
-    millisecond = state.millisecond ?? 0;
-    isRunning = !!state.isRunning;
+  // hide the modal if it was left open
+  resultModal.classList.add("hidden");
 
-    hourInterval.textContent = format(hour);
-    minuteInterval.textContent = format(minute);
-    secondInterval.textContent = format(second);
-    millisecondInterval.textContent = format(millisecond);
-
-    if (isRunning) {
-      timer = setInterval(updateTimer, 10);
-      startButton.textContent = "Pause";
-      timerBox.classList.add("animate");
-      showExtraButtons();
-    }
-
-    feedback.textContent = "Timer state restored.";
-  } catch (err) {
-    console.error("Failed to load timer state:", err);
+  // if we’d left the timer running, re-start the interval
+  if (isRunning && !timer) {
+    timer = setInterval(updateTimer, 10);
+    startButton.textContent = "Pause";
+    timerBox.classList.add("animate");
   }
-})();
-
-// Save timer state every 1 second
-setInterval(async () => {
-  try {
-    await fetch("/timer-state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        hour,
-        minute,
-        second,
-        millisecond,
-        isRunning: isRunning ? 1 : 0,
-      }),
-    });
-  } catch (err) {
-    console.error("Timer state save failed:", err);
-  }
-}, 1000);
+});
