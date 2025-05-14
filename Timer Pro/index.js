@@ -1,4 +1,3 @@
-// Your existing selectors and setup
 const hourInterval = document.querySelector(".hour");
 const minuteInterval = document.querySelector(".minute");
 const secondInterval = document.querySelector(".second");
@@ -111,11 +110,11 @@ restartButton.addEventListener("click", () => {
   clearInterval(timer);
 
   hour = minute = second = millisecond = 0;
-  hourInterval.textContent        = "00";
-  minuteInterval.textContent      = "00";
-  secondInterval.textContent      = "00";
+  hourInterval.textContent = "00";
+  minuteInterval.textContent = "00";
+  secondInterval.textContent = "00";
   millisecondInterval.textContent = "00";
-  
+
   timer = setInterval(updateTimer, 10);
   isRunning = true;
   startButton.textContent = "Pause";
@@ -209,7 +208,6 @@ async function postResultsToServer() {
       feedback.textContent = "Results saved to server.";
       resultModal.classList.remove("hidden");
 
-      // ✅ CLEAR RESULTS after saving
       raceResults = [];
     } else {
       feedback.textContent = "Failed to save results to server.";
@@ -271,14 +269,11 @@ stayBtn.addEventListener("click", () => {
   }
 })();
 
-// when the page becomes visible again (after history.back())
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
 
-  // hide the modal if it was left open
   resultModal.classList.add("hidden");
 
-  // if we’d left the timer running, re-start the interval
   if (isRunning && !timer) {
     timer = setInterval(updateTimer, 10);
     startButton.textContent = "Pause";

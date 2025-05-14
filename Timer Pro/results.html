@@ -107,7 +107,6 @@
           }
 
           data.sort((a, b) => {
-            // Optional: sort by milliseconds if available
             const getMs = (t) => {
               const parts = t.time.split(":").map(Number);
               return (
@@ -125,7 +124,6 @@
             const timeCell = document.createElement("td");
             const medalCell = document.createElement("td");
 
-            // Position + medal
             if (index === 0) {
               posCell.textContent = "1st";
               medalCell.textContent = "🥇";
