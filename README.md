@@ -21,8 +21,6 @@ It lets organisers start / stop the clock, record each finisher, and publish liv
 
 ---
 
----
-
 ## Key Features
 
 ### 🏁 Landing Page – `landing.html`
@@ -163,8 +161,6 @@ These are used throughout the app to enable real-time result viewing, autosave, 
 - **Scroll Management**: The runner log scrolls independently, so the timer and controls remain fixed and always visible.
 - **Offline Support**: Designed to work in airplane mode — results are stored locally and submitted later.
 - **Responsive Design**: Optimized for mobile, tablets, and laptops.
-
----
 
 ---
 
