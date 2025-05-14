@@ -17,7 +17,7 @@ It lets organisers start / stop the clock, record each finisher, and publish liv
 6. [Accessibility & UX Choices](#accessibility--ux-choices)
 7. [AI Assistance Log](#ai-assistance-log)
 8. [Final Reflection](#final-reflection)
-9. [External Learning](#External Learning)
+9. [External Learning](#external-learning)
 
 ---
 
@@ -273,7 +273,7 @@ I’m proud of this solution — it’s fast, clean, accessible, and fits the br
 
 ---
 
-## External Learning:
+## External Learning
 
 I also watched these YouTube tutorials during development which helped with brainstorming ideas:
 
