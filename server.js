@@ -1,12 +1,21 @@
 import express from "express";
 import initDb from "./initializeDb.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const port = 8080;
 const db = initDb();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.json());
-app.use(express.static("Timer Pro"));
+app.use(express.static(__dirname)); // Serve static files from project root
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "landing.html"));
+});
 
 app.post("/submit", (req, res) => {
   const data = req.body;
