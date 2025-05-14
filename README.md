@@ -273,7 +273,7 @@ I’m proud of this solution — it’s fast, clean, accessible, and fits the br
 
 ---
 
-# External Learning:
+## External Learning:
 
 I also watched these YouTube tutorials during development which helped with brainstorming ideas:
 
