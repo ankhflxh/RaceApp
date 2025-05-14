@@ -1,41 +1,57 @@
 import express from "express";
-import fs from "fs";
+import initDb from "./initializeDb.js";
 
 const app = express();
 const port = 8080;
-const DATA_FILE = "raceResults.json";
+const db = initDb();
 
 app.use(express.json());
 app.use(express.static("Timer Pro"));
 
-let raceResults = [];
-if (fs.existsSync(DATA_FILE)) {
-  const saved = fs.readFileSync(DATA_FILE);
-  raceResults = JSON.parse(saved);
-}
-
 app.post("/submit", (req, res) => {
   const data = req.body;
-  if (Array.isArray(data)) {
-    raceResults.push(...data);
-  } else {
-    raceResults.push(data);
+  const insert = db.prepare(
+    "INSERT INTO race_results (id, time) VALUES (?, ?)"
+  );
+
+  try {
+    db.run("DELETE FROM race_results", [], (err) => {
+      if (err) console.error("Failed to clear old results:", err.message);
+
+      if (Array.isArray(data)) {
+        data.forEach((entry) => insert.run(entry.id, entry.time));
+      } else {
+        insert.run(data.id, data.time);
+      }
+    });
+
+    insert.finalize();
+    console.log("Saved to DB:", data);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err.message);
+    res.sendStatus(500);
   }
-
-  fs.writeFileSync(DATA_FILE, JSON.stringify(raceResults, null, 2));
-
-  console.log("Received Results:", data);
-  res.sendStatus(200);
 });
 
 app.get("/results", (req, res) => {
-  res.json(raceResults);
+  db.all("SELECT * FROM race_results", [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.sendStatus(500);
+    }
+    res.json(rows);
+  });
 });
 
 app.delete("/clear", (req, res) => {
-  raceResults.length = 0;
-  fs.writeFileSync(DATA_FILE, JSON.stringify([]));
-  res.send("Race Results cleared.");
+  db.run("DELETE FROM race_results", [], function (err) {
+    if (err) {
+      console.error(err.message);
+      return res.sendStatus(500);
+    }
+    res.send("Race Results cleared.");
+  });
 });
 
 app.listen(port, () => {

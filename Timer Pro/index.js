@@ -1,3 +1,4 @@
+// Your existing selectors and setup
 const hourInterval = document.querySelector(".hour");
 const minuteInterval = document.querySelector(".minute");
 const secondInterval = document.querySelector(".second");
@@ -95,16 +96,11 @@ startButton.addEventListener("click", () => {
 resetButton.addEventListener("click", () => {
   clearInterval(timer);
   isRunning = false;
-  hour = 0;
-  minute = 0;
-  second = 0;
-  millisecond = 0;
-
+  hour = minute = second = millisecond = 0;
   hourInterval.textContent = "00";
   minuteInterval.textContent = "00";
   secondInterval.textContent = "00";
   millisecondInterval.textContent = "00";
-
   startButton.textContent = "Play";
   timerBox.classList.remove("animate");
   feedback.textContent = "Timer reset.";
@@ -137,7 +133,6 @@ saveButton.addEventListener("click", () => {
 idForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const id = runnerInput.value.trim();
-
   warningBox.classList.add("hidden");
 
   if (!id || !recordedTime) {
@@ -151,18 +146,16 @@ idForm.addEventListener("submit", (e) => {
     feedback.textContent = "Duplicate ID detected.";
     return;
   }
-
+  const displayId = `Runner ${id}`;
   raceResults.push({
-    id,
+    id: displayId,
     time: recordedTime,
     ms: timeToMs(recordedTime),
   });
 
   raceResults.sort((a, b) => a.ms - b.ms);
 
-  while (logList.firstChild) {
-    logList.removeChild(logList.firstChild);
-  }
+  while (logList.firstChild) logList.removeChild(logList.firstChild);
 
   raceResults.forEach((runner, index) => {
     const li = document.createElement("li");
@@ -173,10 +166,7 @@ idForm.addEventListener("submit", (e) => {
     else if (index === 2) positionLabel = "🥉 3rd";
     else positionLabel = `${index + 1}th`;
 
-    const text = document.createTextNode(
-      `Runner ${runner.id} – ${runner.time} (${positionLabel} Position)`
-    );
-    li.appendChild(text);
+    li.textContent = `${runner.id} – ${runner.time} (${positionLabel} Position)`;
     logList.appendChild(li);
   });
 
@@ -186,23 +176,25 @@ idForm.addEventListener("submit", (e) => {
   feedback.textContent = "Runner time saved.";
 });
 
-clearButton.addEventListener("click", () => {
+clearButton.addEventListener("click", async () => {
   raceResults = [];
 
-  while (logList.firstChild) {
-    logList.removeChild(logList.firstChild);
-  }
+  while (logList.firstChild) logList.removeChild(logList.firstChild);
 
-  feedback.textContent = "All finish times cleared.";
+  try {
+    await fetch("/clear", { method: "DELETE" });
+    feedback.textContent = "All finish times cleared (DB + UI).";
+  } catch (err) {
+    feedback.textContent = "Failed to clear server results.";
+    console.error(err);
+  }
 });
 
 async function postResultsToServer() {
   try {
-    const res = await fetch("http://localhost:8080/submit", {
+    const res = await fetch("/submit", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(raceResults),
     });
 

@@ -2,148 +2,172 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Race Results</title>
     <style>
       body {
-        background-color: #000;
+        font-family: monospace;
+        background-color: black;
         color: white;
-        font-family: "Courier New", monospace;
-        margin: 0;
-        padding: 2rem;
         text-align: center;
+        padding: 2rem;
       }
 
       h1 {
         margin-bottom: 2rem;
-        font-size: 2rem;
       }
 
       table {
-        width: 90%;
-        max-width: 800px;
-        margin: 0 auto 2rem;
+        margin: 0 auto;
         border-collapse: collapse;
+        width: 90%;
+        max-width: 700px;
       }
 
       th,
       td {
-        padding: 0.75rem;
         border: 1px solid white;
-        text-align: center;
+        padding: 0.75rem;
       }
 
       th {
         background-color: #111;
       }
 
-      tr:nth-child(even) {
-        background-color: #111;
+      td {
+        background-color: #222;
       }
 
       .buttons {
+        margin-top: 2rem;
         display: flex;
         justify-content: center;
         gap: 1rem;
+        flex-wrap: wrap;
       }
 
       button {
-        padding: 0.5rem 1rem;
-        background: white;
-        color: black;
-        border: none;
-        cursor: pointer;
+        padding: 0.6rem 1.2rem;
         font-weight: bold;
+        border: none;
         border-radius: 6px;
-        transition: all 0.2s ease;
+        background: #ddd;
+        color: black;
+        cursor: pointer;
       }
 
       button:hover {
-        background: #ddd;
+        background: #ccc;
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Race Results</h1>
+    <h1>Race Results</h1>
 
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Position</th>
-            <th>Runner ID</th>
-            <th>Time</th>
-            <th>Medal</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
+    <table>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Runner ID</th>
+          <th>Time</th>
+          <th>Medal</th>
+        </tr>
+      </thead>
+      <tbody class="results-body"></tbody>
+    </table>
 
-      <div class="buttons">
-        <button id="clearServer">Clear Server Results</button>
-        <button id="backBtn">Back to Timer</button>
-      </div>
-    </main>
+    <div class="buttons">
+      <button class="refresh-btn">Refresh</button>
+      <button class="clear-btn">Clear Server Results</button>
+      <a href="index.html" class="back-btn">
+        <button type="button">Back to Timer</button>
+      </a>
+    </div>
 
     <script type="module">
-      const resultsBody = document.getElementById("resultsBody");
-      const clearBtn = document.getElementById("clearServer");
-      const backBtn = document.getElementById("backBtn");
+      const tableBody = document.querySelector(".results-body");
+      const refreshBtn = document.querySelector(".refresh-btn");
+      const clearBtn = document.querySelector(".clear-btn");
 
-      async function fetchResults() {
+      const loadResults = async () => {
         try {
-          const res = await fetch("http://localhost:8080/results");
+          const res = await fetch("/results");
           const data = await res.json();
 
-          const sorted = [...data].sort((a, b) => a.ms - b.ms);
+          tableBody.replaceChildren();
 
-          // Clear old rows (no innerHTML)
-          while (resultsBody.firstChild) {
-            resultsBody.removeChild(resultsBody.firstChild);
+          if (!data.length) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.textContent = "No results found.";
+            cell.colSpan = 4;
+            row.appendChild(cell);
+            tableBody.appendChild(row);
+            return;
           }
 
-          sorted.forEach((runner, index) => {
-            const tr = document.createElement("tr");
+          data.sort((a, b) => {
+            // Optional: sort by milliseconds if available
+            const getMs = (t) => {
+              const parts = t.time.split(":").map(Number);
+              return (
+                ((parts[0] * 60 + parts[1]) * 60 + parts[2]) * 1000 + parts[3]
+              );
+            };
+            return getMs(a) - getMs(b);
+          });
 
-            const positionCell = document.createElement("td");
+          data.forEach((runner, index) => {
+            const row = document.createElement("tr");
+
+            const posCell = document.createElement("td");
             const idCell = document.createElement("td");
             const timeCell = document.createElement("td");
             const medalCell = document.createElement("td");
 
-            positionCell.textContent = `#${index + 1}`;
-            idCell.textContent = runner.id ?? "N/A";
-            timeCell.textContent = runner.time ?? "N/A";
+            // Position + medal
+            if (index === 0) {
+              posCell.textContent = "1st";
+              medalCell.textContent = "🥇";
+            } else if (index === 1) {
+              posCell.textContent = "2nd";
+              medalCell.textContent = "🥈";
+            } else if (index === 2) {
+              posCell.textContent = "3rd";
+              medalCell.textContent = "🥉";
+            } else {
+              posCell.textContent = `${index + 1}th`;
+              medalCell.textContent = "-";
+            }
 
-            if (index === 0) medalCell.textContent = "🥇";
-            else if (index === 1) medalCell.textContent = "🥈";
-            else if (index === 2) medalCell.textContent = "🥉";
-            else medalCell.textContent = "";
+            idCell.textContent = runner.id;
+            timeCell.textContent = runner.time;
 
-            tr.appendChild(positionCell);
-            tr.appendChild(idCell);
-            tr.appendChild(timeCell);
-            tr.appendChild(medalCell);
-            resultsBody.appendChild(tr);
+            row.appendChild(posCell);
+            row.appendChild(idCell);
+            row.appendChild(timeCell);
+            row.appendChild(medalCell);
+
+            tableBody.appendChild(row);
           });
         } catch (err) {
-          console.error("Failed to fetch results:", err);
+          console.error("Failed to load results:", err);
         }
-      }
-
-      clearBtn.addEventListener("click", async () => {
+      };
+      const clearResults = async () => {
         try {
-          await fetch("http://localhost:8080/clear", { method: "DELETE" });
-          fetchResults();
+          await fetch("/clear", { method: "DELETE" });
+          tableBody.replaceChildren();
+          feedbackBox.textContent = "All results cleared.";
         } catch (err) {
-          console.error("Failed to clear server results:", err);
+          console.error("Failed to clear results:", err);
+          feedbackBox.textContent = "Error clearing results.";
         }
-      });
+      };
 
-      backBtn.addEventListener("click", () => {
-        window.location.href = "index.html";
-      });
+      clearBtn.addEventListener("click", clearResults);
 
-      fetchResults();
+      refreshBtn.addEventListener("click", loadResults);
+      loadResults();
     </script>
   </body>
 </html>
