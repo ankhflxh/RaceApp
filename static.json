@@ -1,0 +1,7 @@
+{
+  "routes": [
+    { "src": "^/$", "dest": "/landing.html" },
+    { "src": "^/spectator$", "dest": "/spectator.html" },
+    { "src": "^/results$", "dest": "/results.html" }
+  ]
+}
